@@ -6,14 +6,14 @@ import 'package:inventory_management/providers/product_provider.dart';
 import 'package:inventory_management/model/product.dart';
 import 'package:provider/provider.dart'; // Import provider package
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class ProductScreen extends StatefulWidget {
+  const ProductScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<ProductScreen> createState() => _ProductScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _ProductScreenState extends State<ProductScreen> {
   List<Product> items = [];
   List<String> expandedItems = [];
   List<Product> filterItems = [];
@@ -59,18 +59,23 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xffEBE8ED),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.orange,
+        onPressed: () {
+          showProductPopup(context, (data) {
+            context.read<ProductProvider>().addProduct(data);
+          });
+        },
+        child: Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
+      ),
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: const Text('Inventory'),
         actions: [
-          IconButton(
-              onPressed: () {
-                showProductPopup(context, (data) {
-                  context.read<ProductProvider>().addProduct(data);
-                });
-              },
-              icon: const Icon(Icons.add)),
           IconButton(
               onPressed: () {
                 setState(() {
@@ -118,13 +123,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  infoCard("Total Products", provider.items.length),
-                  infoCard("Stocks in Hand", totalProducts(provider.items)),
-                ],
-              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     infoCard("Total Products", provider.items.length),
+              //     infoCard("Stocks in Hand", totalProducts(provider.items)),
+              //   ],
+              // ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -133,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       "Products List",
                       style: TextStyle(
-                        color: Color(0xffc2c2c2),
+                        color: Colors.black,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -152,7 +157,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         'https://cdn-icons-png.flaticon.com/512/7043/7043943.png',
                         height: 40,
                         width: 40,
-                        color: const Color(0xffc2c2c2),
                       ),
                     ),
                   )
@@ -185,176 +189,170 @@ class _HomeScreenState extends State<HomeScreen> {
       BuildContext context, Product product, ProductProvider provider) {
     final isExpanded = provider.isProductExpanded(product.sku);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          product.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        if (product.quantity <= 5)
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.red.shade100,
-                              borderRadius: BorderRadius.circular(8),
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(13),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            product.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
                             ),
-                            child: const Padding(
-                              padding: EdgeInsets.all(5.0),
-                              child: Text(
-                                'Low Stock',
-                                style: TextStyle(
-                                  color: Colors.red,
+                          ),
+                          const SizedBox(width: 10),
+                          if (product.quantity <= 5)
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Padding(
+                                padding: EdgeInsets.all(5.0),
+                                child: Text(
+                                  'Low Stock',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          IconButton(
+                              onPressed: () {
+                                provider.removeProduct(product);
+                              },
+                              icon: Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                              ))
+                        ],
+                      ),
+                      Text('${product.quantity} stocks left')
+                    ],
+                  ),
+                ],
+              ),
+              IconButton(
+                onPressed: () {
+                  provider
+                      .toggleProductExpansion(product.sku); // Toggle expansion
+                },
+                icon: Icon(
+                  isExpanded
+                      ? Icons.keyboard_arrow_down
+                      : Icons.arrow_forward_ios,
+                  size: !isExpanded ? 25 : 40,
+                ),
+              ),
+            ],
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 500), // Slower animation
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter, // Animate from top to bottom
+            child: isExpanded
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 10), // Add spacing for better UI
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              BarcodeWidget(
+                                data: 'product.sku',
+                                barcode: Barcode.code128(),
+                                height: 80,
+                                width: 150,
+                                drawText: false,
+                              ),
+                              Text(
+                                product.sku.split('').join(' '),
+                                style: const TextStyle(
+                                  fontSize: 17,
                                   fontWeight: FontWeight.bold,
                                 ),
-                              ),
-                            ),
-                          )
-                      ],
-                    ),
-                    Text('${product.quantity} stocks left')
-                  ],
-                ),
-              ],
-            ),
-            IconButton(
-              onPressed: () {
-                provider
-                    .toggleProductExpansion(product.sku); // Toggle expansion
-              },
-              icon: Icon(
-                isExpanded
-                    ? Icons.keyboard_arrow_down
-                    : Icons.arrow_forward_ios,
-                size: !isExpanded ? 25 : 40,
-              ),
-            ),
-          ],
-        ),
-        AnimatedSize(
-          duration: const Duration(milliseconds: 500), // Slower animation
-          curve: Curves.easeInOut,
-          alignment: Alignment.topCenter, // Animate from top to bottom
-          child: isExpanded
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 10), // Add spacing for better UI
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            BarcodeWidget(
-                              data: 'product.sku',
-                              barcode: Barcode.code128(),
-                              height: 80,
-                              width: 150,
-                              drawText: false,
-                            ),
-                            Text(
-                              product.sku.split('').join(' '),
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Price per unit :',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    color: Color(0xffc2c2c2),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  '\$${product.price}',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Total Price :',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    color: Color(0xffc2c2c2),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  '\$${product.price * product.quantity}',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            )
-                          ],
-                        )
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        controllerButton(() {
-                          provider.sellProduct(product); // Sell product
-                        }, "Sell"),
-                        controllerButton(() {
-                          provider.restockProduct(product); // Restock product
-                        }, "Restock"),
-                        controllerButton(() {
-                          updateProductPopUp(context, (data) {
-                            provider.updateProduct(data); // Update product
-                          }, product);
-                        }, "Update"),
-                        IconButton(
-                          onPressed: () {
-                            provider.removeProduct(product); // Remove product
-                          },
-                          icon: const Icon(
-                            Icons.delete,
-                            color: Colors.red,
+                              )
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                )
-              : const SizedBox.shrink(),
-        ),
-      ],
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '\$${product.price * product.quantity}',
+                                style: const TextStyle(
+                                  fontSize: 25,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '\$${product.price}',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const Text(
+                                    ' /unit',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Color(0xffc2c2c2),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                ],
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          controllerButton(() {
+                            provider.sellProduct(product); // Sell product
+                          }, "Sell"),
+                          controllerButton(() {
+                            provider.restockProduct(product); // Restock product
+                          }, "Restock"),
+                          controllerButton(() {
+                            updateProductPopUp(context, (data) {
+                              provider.updateProduct(data); // Update product
+                            }, product);
+                          }, "Update"),
+                        ],
+                      ),
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -12,7 +12,14 @@ void showProductPopup(BuildContext context, Function(Product) onSubmit) {
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: const Text('Add Product'),
+        backgroundColor: Colors.orange,
+        title: const Text(
+          'Add Product',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -23,6 +30,12 @@ void showProductPopup(BuildContext context, Function(Product) onSubmit) {
                 decoration: const InputDecoration(
                   labelText: 'Product Name',
                   hintText: 'Enter product name',
+                  labelStyle: TextStyle(
+                    color: Colors.white,
+                  ),
+                  hintStyle: TextStyle(
+                    color: Colors.white,
+                  ),
                 ),
               ),
               TextField(
@@ -30,6 +43,12 @@ void showProductPopup(BuildContext context, Function(Product) onSubmit) {
                 decoration: const InputDecoration(
                   labelText: 'SKU',
                   hintText: 'Enter SKU',
+                  labelStyle: TextStyle(
+                    color: Colors.white,
+                  ),
+                  hintStyle: TextStyle(
+                    color: Colors.white,
+                  ),
                 ),
               ),
               TextField(
@@ -38,6 +57,12 @@ void showProductPopup(BuildContext context, Function(Product) onSubmit) {
                 decoration: const InputDecoration(
                   labelText: 'Price',
                   hintText: 'Enter price',
+                  labelStyle: TextStyle(
+                    color: Colors.white,
+                  ),
+                  hintStyle: TextStyle(
+                    color: Colors.white,
+                  ),
                 ),
               ),
               TextField(
@@ -46,6 +71,12 @@ void showProductPopup(BuildContext context, Function(Product) onSubmit) {
                 decoration: const InputDecoration(
                   labelText: 'Quantity',
                   hintText: 'Enter quantity',
+                  labelStyle: TextStyle(
+                    color: Colors.white,
+                  ),
+                  hintStyle: TextStyle(
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

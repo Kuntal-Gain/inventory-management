@@ -13,9 +13,7 @@ class ProductProvider extends ChangeNotifier {
   }
 
   // Check if a product is expanded
-  bool isProductExpanded(String sku) {
-    return _expandedProducts.contains(sku);
-  }
+  bool isProductExpanded(String sku) => _expandedProducts.contains(sku);
 
   // Toggle the expanded state of a product
   void toggleProductExpansion(String sku) {
@@ -27,56 +25,95 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Load products from local storage
   Future<void> _loadProducts() async {
-    List<Product> savedItems = await LocalStorageService.getProducts();
-
-    _items = savedItems;
-
-    notifyListeners();
+    try {
+      List<Product> savedItems = await LocalStorageService.getProducts();
+      _items = savedItems;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to load products: $e');
+    }
   }
 
-  // Save
+  // Save products to local storage
   Future<void> _saveProducts() async {
-    await LocalStorageService.saveProducts(_items);
-    notifyListeners();
+    try {
+      await LocalStorageService.saveProducts(_items);
+    } catch (e) {
+      debugPrint('Failed to save products: $e');
+    }
   }
 
-  // add product
+  // Add a new product
   void addProduct(Product product) {
     _items.add(product);
     _saveProducts();
+    notifyListeners();
   }
 
-  // update product
+  // Update an existing product
   void updateProduct(Product product) {
     int index = _items.indexWhere((p) => p.sku == product.sku);
     if (index != -1) {
       _items[index] = product;
       _saveProducts();
+      notifyListeners();
     }
   }
 
   // Remove a product
   void removeProduct(Product product) {
-    _items.remove(product);
+    _items.removeWhere((p) => p.sku == product.sku);
     _saveProducts();
+    notifyListeners();
   }
 
   // Sell a product (decrease quantity)
-  void sellProduct(Product product) {
+  void sellProduct(Product product, {int quantity = 1}) {
     int index = _items.indexWhere((p) => p.sku == product.sku);
-    if (index != -1 && _items[index].quantity > 0) {
-      _items[index].quantity -= 1;
+    if (index != -1 && _items[index].quantity >= quantity) {
+      _items[index].quantity -= quantity;
       _saveProducts();
+      notifyListeners();
+    } else {
+      debugPrint('Insufficient quantity for product: ${product.name}');
     }
   }
 
   // Restock a product (increase quantity)
-  void restockProduct(Product product) {
+  void restockProduct(Product product, {int quantity = 1}) {
     int index = _items.indexWhere((p) => p.sku == product.sku);
     if (index != -1) {
-      _items[index].quantity += 1;
+      _items[index].quantity += quantity;
       _saveProducts();
+      notifyListeners();
     }
+  }
+
+  // Bulk sell products
+  void sellProductsInBulk(Map<String, int> skuToQuantity) {
+    for (var entry in skuToQuantity.entries) {
+      int index = _items.indexWhere((p) => p.sku == entry.key);
+      if (index != -1 && _items[index].quantity >= entry.value) {
+        _items[index].quantity -= entry.value;
+      } else {
+        debugPrint('Insufficient quantity for product with SKU: ${entry.key}');
+      }
+    }
+    _saveProducts();
+    notifyListeners();
+  }
+
+  // Bulk restock products
+  void restockProductsInBulk(Map<String, int> skuToQuantity) {
+    for (var entry in skuToQuantity.entries) {
+      int index = _items.indexWhere((p) => p.sku == entry.key);
+      if (index != -1) {
+        _items[index].quantity += entry.value;
+      }
+    }
+    _saveProducts();
+    notifyListeners();
   }
 }
